@@ -1,5 +1,6 @@
 package com.example.attendance_tracker;
 
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -12,8 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
 
     EditText username, password;
-    Button btnUser, btnAdmin, btnSignIn;
-
+    Button btnUser, btnAdmin, btnSignIn, btnGoRegister;
     String selectedRole = "user";
 
     @Override
@@ -23,73 +23,62 @@ public class MainActivity extends AppCompatActivity {
 
         username = findViewById(R.id.username);
         password = findViewById(R.id.password);
-
         btnUser = findViewById(R.id.btnUser);
         btnAdmin = findViewById(R.id.btnAdmin);
         btnSignIn = findViewById(R.id.btnSignIn);
+        btnGoRegister = findViewById(R.id.btnGoRegister);
 
         btnUser.setOnClickListener(v -> {
             selectedRole = "user";
-
-            btnUser.setBackgroundTintList(
-                    ColorStateList.valueOf(Color.parseColor("#1DB954"))
-            );
-
-            btnAdmin.setBackgroundTintList(
-                    ColorStateList.valueOf(Color.parseColor("#282828"))
-            );
+            btnUser.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1DB954")));
+            btnUser.setTextColor(Color.BLACK);
+            btnAdmin.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#282828")));
+            btnAdmin.setTextColor(Color.WHITE);
         });
 
         btnAdmin.setOnClickListener(v -> {
             selectedRole = "admin";
-
-            btnAdmin.setBackgroundTintList(
-                    ColorStateList.valueOf(Color.parseColor("#1DB954"))
-            );
-
-            btnUser.setBackgroundTintList(
-                    ColorStateList.valueOf(Color.parseColor("#282828"))
-            );
+            btnAdmin.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1DB954")));
+            btnAdmin.setTextColor(Color.BLACK);
+            btnUser.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#282828")));
+            btnUser.setTextColor(Color.WHITE);
         });
 
         btnSignIn.setOnClickListener(v -> login());
+
+        btnGoRegister.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void login() {
-
         String userInput = username.getText().toString().trim();
         String passInput = password.getText().toString().trim();
 
         if (selectedRole.equals("admin")) {
-
-            if (userInput.equals("admin")
-                    && passInput.equals("admin123")) {
-
-                Toast.makeText(this,
-                        "Welcome Admin!",
-                        Toast.LENGTH_SHORT).show();
-
+            if (userInput.equals("admin") && passInput.equals("admin123")) {
+                Toast.makeText(this, "Welcome Admin", Toast.LENGTH_SHORT).show();
             } else {
-
-                Toast.makeText(this,
-                        "Admin account only!",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Admin account only", Toast.LENGTH_SHORT).show();
             }
-
         } else {
+            boolean defaultUser = userInput.equals("user") && passInput.equals("user123");
+            boolean registeredUser = userInput.equals(RegisterActivity.registeredUsername)
+                    && passInput.equals(RegisterActivity.registeredPassword);
 
-            if (userInput.equals("user")
-                    && passInput.equals("user123")) {
+            if (defaultUser || registeredUser) {
+                Intent intent = new Intent(MainActivity.this, UserDashboardActivity.class);
 
-                Toast.makeText(this,
-                        "Welcome User!",
-                        Toast.LENGTH_SHORT).show();
+                if (registeredUser && !RegisterActivity.registeredFullName.isEmpty()) {
+                    intent.putExtra("username", RegisterActivity.registeredFullName);
+                } else {
+                    intent.putExtra("username", userInput);
+                }
 
+                startActivity(intent);
             } else {
-
-                Toast.makeText(this,
-                        "User account only!",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "User account only", Toast.LENGTH_SHORT).show();
             }
         }
     }
