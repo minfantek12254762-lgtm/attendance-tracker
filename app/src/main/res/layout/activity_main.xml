@@ -4,26 +4,27 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:gravity="center"
-    android:background="#FFFFFF">
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="24dp">
 
     <LinearLayout
         android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp"
+        android:padding="28dp"
         android:background="#181818">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="IAAM Login"
+            android:textColor="#1DB954"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="#1DB954"
             android:gravity="center"
-            android:layout_marginBottom="20dp"/>
+            android:layout_marginBottom="24dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -34,7 +35,7 @@
             <Button
                 android:id="@+id/btnUser"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="User"
                 android:textStyle="bold"
@@ -44,7 +45,7 @@
             <Button
                 android:id="@+id/btnAdmin"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 android:text="Admin"
@@ -57,7 +58,7 @@
         <EditText
             android:id="@+id/username"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:hint="Username"
             android:textColor="#FFFFFF"
             android:textColorHint="#AAAAAA"
@@ -67,7 +68,7 @@
         <EditText
             android:id="@+id/password"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:hint="Password"
             android:inputType="textPassword"
             android:textColor="#FFFFFF"
@@ -79,12 +80,22 @@
         <Button
             android:id="@+id/btnSignIn"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:text="SIGN IN"
             android:textStyle="bold"
             android:textColor="#000000"
             android:backgroundTint="#1DB954"
-            android:layout_marginTop="20dp"/>
+            android:layout_marginTop="22dp"/>
+
+        <Button
+            android:id="@+id/btnGoRegister"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="CREATE ACCOUNT"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#282828"
+            android:layout_marginTop="10dp"/>
 
     </LinearLayout>
 
