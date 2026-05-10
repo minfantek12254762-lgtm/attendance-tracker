@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8FAFC">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="18dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/helloText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hello, user"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    android:textColor="#0F172A"/>
+
+                <TextView
+                    android:id="@+id/clockText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:00:00"
+                    android:textSize="14sp"
+                    android:textColor="#64748B"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/logoutBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="45dp"
+                android:text="Logout"
+                android:textColor="#475569"
+                android:textStyle="bold"
+                android:backgroundTint="#FFFFFF"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@drawable/card_bg"
+            android:layout_marginBottom="18dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="APPROVED HOURS"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#64748B"/>
+
+            <TextView
+                android:id="@+id/statHours"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.00h"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#1B3318"
+                android:layout_marginBottom="14dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="APPROVED GROSS PAY"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#64748B"/>
+
+            <TextView
+                android:id="@+id/statPay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PHP 0.00"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#1B3318"
+                android:layout_marginBottom="14dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PENDING REQUESTS"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#64748B"/>
+
+            <TextView
+                android:id="@+id/statPending"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#1B3318"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="18dp"
+            android:background="@drawable/card_bg"
+            android:layout_marginBottom="18dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Submit Attendance or Leave Request"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#020617"
+                android:layout_marginBottom="14dp"/>
+
+            <EditText
+                android:id="@+id/dateInput"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="Date"
+                android:textColor="#020617"
+                android:backgroundTint="#CBD5E1"
+                android:padding="12dp"/>
+
+            <Spinner
+                android:id="@+id/requestType"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:backgroundTint="#CBD5E1"
+                android:layout_marginTop="10dp"/>
+
+            <EditText
+                android:id="@+id/timeInInput"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="Time In 08:00"
+                android:inputType="time"
+                android:textColor="#020617"
+                android:backgroundTint="#CBD5E1"
+                android:padding="12dp"
+                android:layout_marginTop="10dp"/>
+
+            <EditText
+                android:id="@+id/timeOutInput"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="Time Out 17:00"
+                android:inputType="time"
+                android:textColor="#020617"
+                android:backgroundTint="#CBD5E1"
+                android:padding="12dp"
+                android:layout_marginTop="10dp"/>
+
+            <TextView
+                android:id="@+id/estPay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PHP 0.00"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#2D5A27"
+                android:layout_marginTop="14dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Overtime is detected automatically when paid work hours exceed 8 hours after the 1-hour break deduction."
+                android:textSize="13sp"
+                android:textColor="#64748B"
+                android:layout_marginTop="8dp"/>
+
+            <Button
+                android:id="@+id/submitBtn"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Submit Request"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#1B3318"
+                android:layout_marginTop="16dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="18dp"
+            android:background="@drawable/card_bg">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Requests"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#020617"
+                android:layout_marginBottom="14dp"/>
+
+            <TextView
+                android:id="@+id/emptyText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No requests yet"
+                android:textColor="#64748B"
+                android:textSize="14sp"/>
+
+            <LinearLayout
+                android:id="@+id/recordContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
