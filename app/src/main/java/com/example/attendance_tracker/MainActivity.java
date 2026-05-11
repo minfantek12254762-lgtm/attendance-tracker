@@ -14,7 +14,14 @@ public class MainActivity extends AppCompatActivity {
 
     EditText username, password;
     Button btnUser, btnAdmin, btnSignIn, btnGoRegister;
+
     String selectedRole = "user";
+
+    String adminUsername = "admin";
+    String adminPassword = "admin123";
+
+    String defaultUserUsername = "user";
+    String defaultUserPassword = "user123";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
         username = findViewById(R.id.username);
         password = findViewById(R.id.password);
+
         btnUser = findViewById(R.id.btnUser);
         btnAdmin = findViewById(R.id.btnAdmin);
         btnSignIn = findViewById(R.id.btnSignIn);
@@ -30,17 +38,33 @@ public class MainActivity extends AppCompatActivity {
 
         btnUser.setOnClickListener(v -> {
             selectedRole = "user";
-            btnUser.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1DB954")));
+
+            btnUser.setBackgroundTintList(
+                    ColorStateList.valueOf(Color.parseColor("#1DB954"))
+            );
+
             btnUser.setTextColor(Color.BLACK);
-            btnAdmin.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#282828")));
+
+            btnAdmin.setBackgroundTintList(
+                    ColorStateList.valueOf(Color.parseColor("#282828"))
+            );
+
             btnAdmin.setTextColor(Color.WHITE);
         });
 
         btnAdmin.setOnClickListener(v -> {
             selectedRole = "admin";
-            btnAdmin.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1DB954")));
+
+            btnAdmin.setBackgroundTintList(
+                    ColorStateList.valueOf(Color.parseColor("#1DB954"))
+            );
+
             btnAdmin.setTextColor(Color.BLACK);
-            btnUser.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#282828")));
+
+            btnUser.setBackgroundTintList(
+                    ColorStateList.valueOf(Color.parseColor("#282828"))
+            );
+
             btnUser.setTextColor(Color.WHITE);
         });
 
@@ -53,32 +77,68 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void login() {
+
         String userInput = username.getText().toString().trim();
         String passInput = password.getText().toString().trim();
 
         if (selectedRole.equals("admin")) {
-            if (userInput.equals("admin") && passInput.equals("admin123")) {
-                Toast.makeText(this, "Welcome Admin", Toast.LENGTH_SHORT).show();
+
+            if (userInput.equals(adminUsername)
+                    && passInput.equals(adminPassword)) {
+
+                Toast.makeText(this,
+                        "Welcome Admin",
+                        Toast.LENGTH_SHORT).show();
+
+                Intent intent =
+                        new Intent(MainActivity.this,
+                                AdminDashboardActivity.class);
+
+                startActivity(intent);
+
             } else {
-                Toast.makeText(this, "Admin account only", Toast.LENGTH_SHORT).show();
+
+                Toast.makeText(this,
+                        "Invalid admin credentials",
+                        Toast.LENGTH_SHORT).show();
             }
+
         } else {
-            boolean defaultUser = userInput.equals("user") && passInput.equals("user123");
-            boolean registeredUser = userInput.equals(RegisterActivity.registeredUsername)
-                    && passInput.equals(RegisterActivity.registeredPassword);
+
+            boolean defaultUser =
+                    userInput.equals(defaultUserUsername)
+                            && passInput.equals(defaultUserPassword);
+
+            boolean registeredUser =
+                    userInput.equals(RegisterActivity.registeredUsername)
+                            && passInput.equals(RegisterActivity.registeredPassword);
 
             if (defaultUser || registeredUser) {
-                Intent intent = new Intent(MainActivity.this, UserDashboardActivity.class);
 
-                if (registeredUser && !RegisterActivity.registeredFullName.isEmpty()) {
-                    intent.putExtra("username", RegisterActivity.registeredFullName);
+                Intent intent =
+                        new Intent(MainActivity.this,
+                                UserDashboardActivity.class);
+
+                if (registeredUser
+                        && !RegisterActivity.registeredFullName.isEmpty()) {
+
+                    intent.putExtra(
+                            "username",
+                            RegisterActivity.registeredFullName
+                    );
+
                 } else {
+
                     intent.putExtra("username", userInput);
                 }
 
                 startActivity(intent);
+
             } else {
-                Toast.makeText(this, "User account only", Toast.LENGTH_SHORT).show();
+
+                Toast.makeText(this,
+                        "Invalid user credentials",
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }
