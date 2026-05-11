@@ -34,6 +34,7 @@ public class RegisterActivity extends AppCompatActivity {
         btnGoLogin.setOnClickListener(v -> {
             Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
             startActivity(intent);
+            finish();
         });
     }
 
