@@ -1,9 +1,8 @@
 package com.example.attendance_tracker;
 
-import android.app.AlertDialog;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -15,377 +14,264 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
-public class AdminDashboardActivity extends AppCompatActivity {
+public class UserDashboardActivity extends AppCompatActivity {
 
-    EditText searchInput;
-    Spinner statusFilter;
-    Button searchBtn, clearBtn, createBtn, logoutBtn;
+    TextView helloText, clockText, statHours, statPay, statPending, estPay, emptyText;
+    EditText dateInput, timeInInput, timeOutInput;
+    Spinner requestType;
+    Button submitBtn, logoutBtn;
     LinearLayout recordContainer;
 
-    ArrayList<Record> records = new ArrayList<>();
-    int nextId = 1;
+    Handler handler = new Handler();
+
+    double hourlyRate = 250.00;
+    double approvedHours = 0;
+    double approvedPay = 0;
+    int pendingCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_dashboard);
+        setContentView(R.layout.activity_user_dashboard);
 
-        searchInput = findViewById(R.id.searchInput);
-        statusFilter = findViewById(R.id.statusFilter);
-        searchBtn = findViewById(R.id.searchBtn);
-        clearBtn = findViewById(R.id.clearBtn);
-        createBtn = findViewById(R.id.createBtn);
+        helloText = findViewById(R.id.helloText);
+        clockText = findViewById(R.id.clockText);
+        statHours = findViewById(R.id.statHours);
+        statPay = findViewById(R.id.statPay);
+        statPending = findViewById(R.id.statPending);
+        estPay = findViewById(R.id.estPay);
+        dateInput = findViewById(R.id.dateInput);
+        timeInInput = findViewById(R.id.timeInInput);
+        timeOutInput = findViewById(R.id.timeOutInput);
+        requestType = findViewById(R.id.requestType);
+        submitBtn = findViewById(R.id.submitBtn);
         logoutBtn = findViewById(R.id.logoutBtn);
         recordContainer = findViewById(R.id.recordContainer);
+        emptyText = findViewById(R.id.emptyText);
 
-        ArrayAdapter<String> filterAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                new String[]{"All", "Pending", "Approved", "Rejected"}
-        );
+        String username = getIntent().getStringExtra("username");
 
-        statusFilter.setAdapter(filterAdapter);
-
-        displayRecords(records);
-
-        searchBtn.setOnClickListener(v -> filterRecords());
-
-        clearBtn.setOnClickListener(v -> {
-            searchInput.setText("");
-            statusFilter.setSelection(0);
-            displayRecords(records);
-        });
-
-        createBtn.setOnClickListener(v -> openRecordDialog(null));
-
-        logoutBtn.setOnClickListener(v -> finish());
-    }
-
-    private void filterRecords() {
-        String search = searchInput.getText().toString().trim().toLowerCase();
-        String status = statusFilter.getSelectedItem().toString();
-
-        ArrayList<Record> filtered = new ArrayList<>();
-
-        for (Record record : records) {
-            boolean matchesSearch =
-                    record.name.toLowerCase().contains(search)
-                            || record.date.toLowerCase().contains(search)
-                            || record.type.toLowerCase().contains(search)
-                            || record.status.toLowerCase().contains(search);
-
-            boolean matchesStatus = status.equals("All") || record.status.equals(status);
-
-            if (matchesSearch && matchesStatus) {
-                filtered.add(record);
-            }
+        if (username == null || username.isEmpty()) {
+            username = "user";
         }
 
-        displayRecords(filtered);
-    }
+        helloText.setText("Hello, " + username);
 
-    private void displayRecords(ArrayList<Record> list) {
-        recordContainer.removeAllViews();
-
-        if (list.isEmpty()) {
-            TextView empty = new TextView(this);
-            empty.setText("No attendance or leave records found");
-            empty.setTextColor(Color.parseColor("#64748B"));
-            empty.setTextSize(14);
-            empty.setPadding(20, 30, 20, 30);
-            recordContainer.addView(empty);
-            return;
-        }
-
-        for (Record record : list) {
-            LinearLayout card = new LinearLayout(this);
-            card.setOrientation(LinearLayout.VERTICAL);
-            card.setPadding(18, 18, 18, 18);
-            card.setBackgroundResource(R.drawable.card_bg);
-
-            LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            );
-
-            cardParams.setMargins(0, 0, 0, 14);
-            card.setLayoutParams(cardParams);
-
-            TextView details = new TextView(this);
-            details.setText(
-                    "ID: " + record.id +
-                            "\nName: " + record.name +
-                            "\nDate: " + record.date +
-                            "\nType: " + record.type +
-                            "\nTime: " + record.time +
-                            "\nPaid Hours: " + format(record.paidHours) +
-                            "\nRegular Hours: " + format(record.regularHours) +
-                            "\nOT Hours: " + format(record.overtimeHours) +
-                            "\nHourly Rate: PHP " + format(record.hourlyRate) +
-                            "\nBonus: PHP " + format(record.bonus) +
-                            "\nDeductions: PHP " + format(record.deductions) +
-                            "\nGross Pay: PHP " + format(record.grossPay) +
-                            "\nStatus: " + record.status +
-                            "\nRemarks: " + record.remarks
-            );
-
-            details.setTextColor(Color.parseColor("#0F172A"));
-            details.setTextSize(14);
-
-            LinearLayout actions = new LinearLayout(this);
-            actions.setOrientation(LinearLayout.HORIZONTAL);
-            actions.setPadding(0, 16, 0, 0);
-
-            Button approve = makeButton("Approve", "#15803D");
-            Button reject = makeButton("Reject", "#B91C1C");
-            Button edit = makeButton("Edit", "#111827");
-            Button delete = makeButton("Delete", "#E50914");
-
-            approve.setOnClickListener(v -> {
-                record.status = "Approved";
-                record.remarks = "Approved by admin";
-                filterRecords();
-            });
-
-            reject.setOnClickListener(v -> {
-                record.status = "Rejected";
-                record.remarks = "Rejected by admin";
-                filterRecords();
-            });
-
-            edit.setOnClickListener(v -> openRecordDialog(record));
-
-            delete.setOnClickListener(v -> {
-                records.remove(record);
-                filterRecords();
-            });
-
-            if (record.status.equals("Pending")) {
-                actions.addView(approve);
-                actions.addView(reject);
-            }
-
-            actions.addView(edit);
-            actions.addView(delete);
-
-            card.addView(details);
-            card.addView(actions);
-            recordContainer.addView(card);
-        }
-    }
-
-    private Button makeButton(String text, String color) {
-        Button button = new Button(this);
-        button.setText(text);
-        button.setTextColor(Color.WHITE);
-        button.setTextSize(12);
-        button.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(color)));
-
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                0,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                1
-        );
-
-        params.setMargins(4, 0, 4, 0);
-        button.setLayoutParams(params);
-
-        return button;
-    }
-
-    private void openRecordDialog(Record existingRecord) {
-        View view = getLayoutInflater().inflate(R.layout.dialog_record, null);
-
-        EditText nameInput = view.findViewById(R.id.employeeName);
-        EditText dateInput = view.findViewById(R.id.attendanceDate);
-        Spinner typeInput = view.findViewById(R.id.leaveType);
-        EditText timeInInput = view.findViewById(R.id.timeIn);
-        EditText timeOutInput = view.findViewById(R.id.timeOut);
-        EditText paidInput = view.findViewById(R.id.paidHours);
-        EditText rateInput = view.findViewById(R.id.hourlyRate);
-        EditText bonusInput = view.findViewById(R.id.bonus);
-        EditText deductInput = view.findViewById(R.id.deductions);
-        Spinner statusInput = view.findViewById(R.id.status);
-        EditText remarksInput = view.findViewById(R.id.adminRemarks);
-
-        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_dropdown_item,
                 new String[]{"Regular Work", "Vacation Leave", "Sick Leave"}
         );
 
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                new String[]{"Pending", "Approved", "Rejected"}
-        );
+        requestType.setAdapter(adapter);
 
-        typeInput.setAdapter(typeAdapter);
-        statusInput.setAdapter(statusAdapter);
+        dateInput.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
 
-        if (existingRecord != null) {
-            nameInput.setText(existingRecord.name);
-            dateInput.setText(existingRecord.date);
+        startClock();
+        updateStats();
 
-            if (existingRecord.type.equals("Vacation Leave")) {
-                typeInput.setSelection(1);
-            } else if (existingRecord.type.equals("Sick Leave")) {
-                typeInput.setSelection(2);
-            } else {
-                typeInput.setSelection(0);
-            }
+        requestType.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                String type = requestType.getSelectedItem().toString();
 
-            if (existingRecord.time.contains(" - ")) {
-                String[] timeParts = existingRecord.time.split(" - ");
-                timeInInput.setText(timeParts[0]);
-                timeOutInput.setText(timeParts[1]);
-            }
-
-            paidInput.setText(format(existingRecord.paidHours));
-            rateInput.setText(format(existingRecord.hourlyRate));
-            bonusInput.setText(format(existingRecord.bonus));
-            deductInput.setText(format(existingRecord.deductions));
-
-            if (existingRecord.status.equals("Approved")) {
-                statusInput.setSelection(1);
-            } else if (existingRecord.status.equals("Rejected")) {
-                statusInput.setSelection(2);
-            } else {
-                statusInput.setSelection(0);
-            }
-
-            remarksInput.setText(existingRecord.remarks);
-        } else {
-            rateInput.setText("250");
-            bonusInput.setText("0");
-            deductInput.setText("0");
-            paidInput.setText("0");
-        }
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(existingRecord == null ? "Create Record" : "Edit Record")
-                .setView(view)
-                .setPositiveButton("Save", null)
-                .setNegativeButton("Cancel", null)
-                .create();
-
-        dialog.setOnShowListener(d -> {
-            Button save = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-
-            save.setOnClickListener(v -> {
-                String name = nameInput.getText().toString().trim();
-                String date = dateInput.getText().toString().trim();
-                String type = typeInput.getSelectedItem().toString();
-                String timeIn = timeInInput.getText().toString().trim();
-                String timeOut = timeOutInput.getText().toString().trim();
-                String remarks = remarksInput.getText().toString().trim();
-                String status = statusInput.getSelectedItem().toString();
-
-                if (name.isEmpty() || date.isEmpty()) {
-                    Toast.makeText(this, "Name and date are required", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                double paid = parseDouble(paidInput.getText().toString());
-                double rate = parseDouble(rateInput.getText().toString());
-                double bonus = parseDouble(bonusInput.getText().toString());
-                double deductions = parseDouble(deductInput.getText().toString());
-
-                double regular = Math.min(paid, 8);
-                double overtime = Math.max(0, paid - 8);
-                double gross = calculateGrossPay(regular, overtime, rate, bonus, deductions);
-
-                String time = "-";
-
-                if (type.equals("Regular Work")) {
-                    time = timeIn + " - " + timeOut;
-                }
-
-                if (remarks.isEmpty()) {
-                    remarks = "-";
-                }
-
-                if (existingRecord == null) {
-                    records.add(new Record(
-                            nextId++,
-                            name,
-                            date,
-                            type,
-                            time,
-                            paid,
-                            regular,
-                            overtime,
-                            rate,
-                            bonus,
-                            deductions,
-                            status,
-                            remarks
-                    ));
+                if (!type.equals("Regular Work")) {
+                    timeInInput.setText("");
+                    timeOutInput.setText("");
+                    timeInInput.setEnabled(false);
+                    timeOutInput.setEnabled(false);
+                    estPay.setText("PHP 0.00");
                 } else {
-                    existingRecord.name = name;
-                    existingRecord.date = date;
-                    existingRecord.type = type;
-                    existingRecord.time = time;
-                    existingRecord.paidHours = paid;
-                    existingRecord.regularHours = regular;
-                    existingRecord.overtimeHours = overtime;
-                    existingRecord.hourlyRate = rate;
-                    existingRecord.bonus = bonus;
-                    existingRecord.deductions = deductions;
-                    existingRecord.grossPay = gross;
-                    existingRecord.status = status;
-                    existingRecord.remarks = remarks;
+                    timeInInput.setEnabled(true);
+                    timeOutInput.setEnabled(true);
+                    updateEstimate();
                 }
+            }
 
-                filterRecords();
-                dialog.dismiss();
-            });
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+            }
         });
 
-        dialog.show();
+        timeInInput.setOnFocusChangeListener((v, hasFocus) -> updateEstimate());
+        timeOutInput.setOnFocusChangeListener((v, hasFocus) -> updateEstimate());
+
+        submitBtn.setOnClickListener(v -> submitRequest());
+
+        logoutBtn.setOnClickListener(v -> finish());
     }
 
-    private double calculateGrossPay(double regular, double overtime, double rate, double bonus, double deductions) {
-        double regularPay = regular * rate;
-        double overtimePay = overtime * (rate * 1.25);
-        return regularPay + overtimePay + bonus - deductions;
+    private void startClock() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                String time = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                clockText.setText(time);
+                handler.postDelayed(this, 1000);
+            }
+        }, 0);
     }
 
-    private double parseDouble(String value) {
+    private void updateEstimate() {
+        String type = requestType.getSelectedItem().toString();
+
+        if (!type.equals("Regular Work")) {
+            estPay.setText("PHP 0.00");
+            return;
+        }
+
+        double paidHours = calculatePaidHours();
+        double grossPay = paidHours * hourlyRate;
+
+        estPay.setText("PHP " + String.format(Locale.getDefault(), "%.2f", grossPay));
+    }
+
+    private void submitRequest() {
+        String date = dateInput.getText().toString().trim();
+        String type = requestType.getSelectedItem().toString();
+        String timeIn = timeInInput.getText().toString().trim();
+        String timeOut = timeOutInput.getText().toString().trim();
+
+        if (date.isEmpty()) {
+            Toast.makeText(this, "Please enter date", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        double paidHours = 0;
+        double overtime = 0;
+        double grossPay = 0;
+        String timeDisplay = "-";
+
+        if (type.equals("Regular Work")) {
+            if (timeIn.isEmpty() || timeOut.isEmpty()) {
+                Toast.makeText(this, "Please enter Time In and Time Out", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            paidHours = calculatePaidHours();
+
+            if (paidHours <= 0) {
+                Toast.makeText(this, "Invalid time", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            overtime = Math.max(0, paidHours - 8);
+            grossPay = paidHours * hourlyRate;
+            timeDisplay = timeIn + " - " + timeOut;
+        }
+
+        pendingCount++;
+        updateStats();
+
+        addRecord(
+                date,
+                type,
+                timeDisplay,
+                paidHours,
+                overtime,
+                grossPay,
+                "Pending",
+                "Waiting for admin review"
+        );
+
+        timeInInput.setText("");
+        timeOutInput.setText("");
+        estPay.setText("PHP 0.00");
+
+        Toast.makeText(this, "Request submitted", Toast.LENGTH_SHORT).show();
+    }
+
+    private double calculatePaidHours() {
         try {
-            return Double.parseDouble(value);
+            String timeIn = timeInInput.getText().toString().trim();
+            String timeOut = timeOutInput.getText().toString().trim();
+
+            if (timeIn.isEmpty() || timeOut.isEmpty()) {
+                return 0;
+            }
+
+            SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+            Date in = format.parse(timeIn);
+            Date out = format.parse(timeOut);
+
+            if (in == null || out == null) {
+                return 0;
+            }
+
+            long difference = out.getTime() - in.getTime();
+
+            if (difference <= 0) {
+                return 0;
+            }
+
+            double hours = difference / 3600000.0;
+
+            if (hours > 5) {
+                hours -= 1;
+            }
+
+            return hours;
+
         } catch (Exception e) {
             return 0;
         }
     }
 
-    private String format(double value) {
-        return String.format(Locale.getDefault(), "%.2f", value);
+    private void addRecord(
+            String date,
+            String type,
+            String time,
+            double paidHours,
+            double overtime,
+            double grossPay,
+            String status,
+            String remarks
+    ) {
+        emptyText.setVisibility(View.GONE);
+
+        TextView record = new TextView(this);
+
+        record.setText(
+                "Date: " + date +
+                        "\nType: " + type +
+                        "\nTime: " + time +
+                        "\nPaid Hrs: " + String.format(Locale.getDefault(), "%.2f", paidHours) +
+                        "\nOT: " + String.format(Locale.getDefault(), "%.2f", overtime) +
+                        "\nGross Pay: PHP " + String.format(Locale.getDefault(), "%.2f", grossPay) +
+                        "\nStatus: " + status +
+                        "\nAdmin Remarks: " + remarks
+        );
+
+        record.setTextSize(14);
+        record.setTextColor(Color.parseColor("#1E293B"));
+        record.setPadding(18, 18, 18, 18);
+        record.setBackgroundResource(R.drawable.record_bg);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+
+        params.setMargins(0, 0, 0, 14);
+        record.setLayoutParams(params);
+
+        recordContainer.addView(record);
     }
 
-    static class Record {
-        int id;
-        String name, date, type, time, status, remarks;
-        double paidHours, regularHours, overtimeHours, hourlyRate, bonus, deductions, grossPay;
+    private void updateStats() {
+        statHours.setText(String.format(Locale.getDefault(), "%.2fh", approvedHours));
+        statPay.setText("PHP " + String.format(Locale.getDefault(), "%.2f", approvedPay));
+        statPending.setText(String.valueOf(pendingCount));
+    }
 
-        Record(int id, String name, String date, String type, String time, double paidHours, double regularHours, double overtimeHours, double hourlyRate, double bonus, double deductions, String status, String remarks) {
-            this.id = id;
-            this.name = name;
-            this.date = date;
-            this.type = type;
-            this.time = time;
-            this.paidHours = paidHours;
-            this.regularHours = regularHours;
-            this.overtimeHours = overtimeHours;
-            this.hourlyRate = hourlyRate;
-            this.bonus = bonus;
-            this.deductions = deductions;
-            this.grossPay = regularHours * hourlyRate + overtimeHours * (hourlyRate * 1.25) + bonus - deductions;
-            this.status = status;
-            this.remarks = remarks;
-        }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
     }
 }
