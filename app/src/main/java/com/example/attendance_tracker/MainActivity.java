@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -39,33 +40,39 @@ public class MainActivity extends AppCompatActivity {
         btnUser.setOnClickListener(v -> {
             selectedRole = "user";
 
+            btnGoRegister.setVisibility(View.VISIBLE);
+
             btnUser.setBackgroundTintList(
                     ColorStateList.valueOf(Color.parseColor("#1DB954"))
             );
-
             btnUser.setTextColor(Color.BLACK);
 
             btnAdmin.setBackgroundTintList(
                     ColorStateList.valueOf(Color.parseColor("#282828"))
             );
-
             btnAdmin.setTextColor(Color.WHITE);
+
+            username.setText("");
+            password.setText("");
         });
 
         btnAdmin.setOnClickListener(v -> {
             selectedRole = "admin";
 
+            btnGoRegister.setVisibility(View.GONE);
+
             btnAdmin.setBackgroundTintList(
                     ColorStateList.valueOf(Color.parseColor("#1DB954"))
             );
-
             btnAdmin.setTextColor(Color.BLACK);
 
             btnUser.setBackgroundTintList(
                     ColorStateList.valueOf(Color.parseColor("#282828"))
             );
-
             btnUser.setTextColor(Color.WHITE);
+
+            username.setText("");
+            password.setText("");
         });
 
         btnSignIn.setOnClickListener(v -> login());
@@ -81,26 +88,23 @@ public class MainActivity extends AppCompatActivity {
         String userInput = username.getText().toString().trim();
         String passInput = password.getText().toString().trim();
 
+        if (userInput.isEmpty() || passInput.isEmpty()) {
+            Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (selectedRole.equals("admin")) {
 
-            if (userInput.equals(adminUsername)
-                    && passInput.equals(adminPassword)) {
+            if (userInput.equals(adminUsername) && passInput.equals(adminPassword)) {
 
-                Toast.makeText(this,
-                        "Welcome Admin",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Welcome Admin", Toast.LENGTH_SHORT).show();
 
-                Intent intent =
-                        new Intent(MainActivity.this,
-                                AdminDashboardActivity.class);
-
+                Intent intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
                 startActivity(intent);
 
             } else {
 
-                Toast.makeText(this,
-                        "Invalid admin credentials",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Invalid admin credentials", Toast.LENGTH_SHORT).show();
             }
 
         } else {
@@ -115,20 +119,11 @@ public class MainActivity extends AppCompatActivity {
 
             if (defaultUser || registeredUser) {
 
-                Intent intent =
-                        new Intent(MainActivity.this,
-                                UserDashboardActivity.class);
+                Intent intent = new Intent(MainActivity.this, UserDashboardActivity.class);
 
-                if (registeredUser
-                        && !RegisterActivity.registeredFullName.isEmpty()) {
-
-                    intent.putExtra(
-                            "username",
-                            RegisterActivity.registeredFullName
-                    );
-
+                if (registeredUser && !RegisterActivity.registeredFullName.isEmpty()) {
+                    intent.putExtra("username", RegisterActivity.registeredFullName);
                 } else {
-
                     intent.putExtra("username", userInput);
                 }
 
@@ -136,9 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
             } else {
 
-                Toast.makeText(this,
-                        "Invalid user credentials",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Invalid user credentials", Toast.LENGTH_SHORT).show();
             }
         }
     }
