@@ -26,31 +26,44 @@ public class RegisterActivity extends AppCompatActivity {
         username = findViewById(R.id.username);
         password = findViewById(R.id.password);
         confirmPassword = findViewById(R.id.confirmPassword);
+
         btnRegister = findViewById(R.id.btnRegister);
         btnGoLogin = findViewById(R.id.btnGoLogin);
 
-        btnRegister.setOnClickListener(v -> register());
+        btnRegister.setOnClickListener(v -> registerUser());
 
-        btnGoLogin.setOnClickListener(v -> {
-            Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        });
+        btnGoLogin.setOnClickListener(v -> goToLogin());
     }
 
-    private void register() {
+    private void registerUser() {
+
         String nameInput = fullName.getText().toString().trim();
         String userInput = username.getText().toString().trim();
         String passInput = password.getText().toString().trim();
-        String confirmInput = confirmPassword.getText().toString().trim();
+        String confirmPassInput = confirmPassword.getText().toString().trim();
 
-        if (nameInput.isEmpty() || userInput.isEmpty() || passInput.isEmpty() || confirmInput.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+        if (nameInput.isEmpty()) {
+            Toast.makeText(this, "Please enter full name", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (!passInput.equals(confirmInput)) {
-            Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+        if (userInput.isEmpty()) {
+            Toast.makeText(this, "Please enter username", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (passInput.isEmpty()) {
+            Toast.makeText(this, "Please enter password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (confirmPassInput.isEmpty()) {
+            Toast.makeText(this, "Please confirm your password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!passInput.equals(confirmPassInput)) {
+            Toast.makeText(this, "Password does not match", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -58,9 +71,14 @@ public class RegisterActivity extends AppCompatActivity {
         registeredUsername = userInput;
         registeredPassword = passInput;
 
-        Toast.makeText(this, "Registered successfully", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Account registered successfully", Toast.LENGTH_SHORT).show();
 
+        goToLogin();
+    }
+
+    private void goToLogin() {
         Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
         finish();
     }
