@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F1F5F9"
+    android:background="#EEF7EE"
     android:fillViewport="true">
 
     <LinearLayout
@@ -14,8 +14,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
             android:layout_marginBottom="18dp"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <LinearLayout
@@ -29,7 +29,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Hello, user"
-                    android:textColor="#0F172A"
+                    android:textColor="#163A24"
                     android:textSize="28sp"
                     android:textStyle="bold" />
 
@@ -39,7 +39,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="00:00:00 AM"
-                    android:textColor="#64748B"
+                    android:textColor="#4E6B57"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -47,12 +47,13 @@
                 android:id="@+id/logoutBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="46dp"
-                android:background="@drawable/pill_outline_bg"
+                android:background="@drawable/logout_red_bg"
+                android:backgroundTint="@null"
                 android:paddingStart="18dp"
                 android:paddingEnd="18dp"
                 android:text="Logout"
                 android:textAllCaps="false"
-                android:textColor="#475569"
+                android:textColor="#FFFFFF"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -60,7 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="18dp"
-            android:background="@drawable/card_bg"
+            android:background="@drawable/dashboard_green_card_bg"
             android:orientation="horizontal"
             android:padding="14dp"
             android:weightSum="3">
@@ -68,9 +69,9 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                android:background="@drawable/stat_box_bg"
+                android:layout_weight="1"
+                android:background="@drawable/green_stat_box_bg"
                 android:orientation="vertical"
                 android:padding="14dp">
 
@@ -78,7 +79,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="APPROVED HOURS"
-                    android:textColor="#64748B"
+                    android:textColor="#42604A"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
@@ -88,7 +89,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="0.00h"
-                    android:textColor="#1B3318"
+                    android:textColor="#173F1C"
                     android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -96,10 +97,10 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
-                android:background="@drawable/stat_box_bg"
+                android:layout_weight="1"
+                android:background="@drawable/green_stat_box_bg"
                 android:orientation="vertical"
                 android:padding="14dp">
 
@@ -107,7 +108,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="APPROVED GROSS PAY"
-                    android:textColor="#64748B"
+                    android:textColor="#42604A"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
@@ -117,7 +118,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="PHP 0.00"
-                    android:textColor="#1B3318"
+                    android:textColor="#173F1C"
                     android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -125,9 +126,9 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                android:background="@drawable/stat_box_bg"
+                android:layout_weight="1"
+                android:background="@drawable/green_stat_box_bg"
                 android:orientation="vertical"
                 android:padding="14dp">
 
@@ -135,7 +136,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="PENDING REQUESTS"
-                    android:textColor="#64748B"
+                    android:textColor="#42604A"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
@@ -145,7 +146,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="0"
-                    android:textColor="#1B3318"
+                    android:textColor="#173F1C"
                     android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -155,7 +156,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="18dp"
-            android:background="@drawable/card_bg"
+            android:background="@drawable/dashboard_green_card_bg"
             android:orientation="vertical"
             android:padding="18dp">
 
@@ -164,7 +165,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
                 android:text="Submit Attendance or Leave Request"
-                android:textColor="#0F172A"
+                android:textColor="#173F1C"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -190,7 +191,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="6dp"
                             android:text="Date"
-                            android:textColor="#334155"
+                            android:textColor="#2F4F38"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -198,12 +199,12 @@
                             android:id="@+id/dateInput"
                             android:layout_width="match_parent"
                             android:layout_height="50dp"
-                            android:background="@drawable/input_bg"
+                            android:background="@drawable/green_input_bg"
                             android:hint="Date"
                             android:paddingStart="12dp"
                             android:paddingEnd="12dp"
-                            android:textColor="#0F172A"
-                            android:textColorHint="#94A3B8" />
+                            android:textColor="#163A24"
+                            android:textColorHint="#7A8F7F" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -217,7 +218,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="6dp"
                             android:text="Request Type"
-                            android:textColor="#334155"
+                            android:textColor="#2F4F38"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -225,7 +226,7 @@
                             android:id="@+id/requestType"
                             android:layout_width="match_parent"
                             android:layout_height="50dp"
-                            android:background="@drawable/input_bg" />
+                            android:background="@drawable/green_input_bg" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -239,7 +240,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="6dp"
                             android:text="Time In"
-                            android:textColor="#334155"
+                            android:textColor="#2F4F38"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -247,13 +248,13 @@
                             android:id="@+id/timeInInput"
                             android:layout_width="match_parent"
                             android:layout_height="50dp"
-                            android:background="@drawable/input_bg"
+                            android:background="@drawable/green_input_bg"
                             android:hint="08:00"
                             android:inputType="time"
                             android:paddingStart="12dp"
                             android:paddingEnd="12dp"
-                            android:textColor="#0F172A"
-                            android:textColorHint="#94A3B8" />
+                            android:textColor="#163A24"
+                            android:textColorHint="#7A8F7F" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -267,7 +268,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="6dp"
                             android:text="Time Out"
-                            android:textColor="#334155"
+                            android:textColor="#2F4F38"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -275,13 +276,13 @@
                             android:id="@+id/timeOutInput"
                             android:layout_width="match_parent"
                             android:layout_height="50dp"
-                            android:background="@drawable/input_bg"
+                            android:background="@drawable/green_input_bg"
                             android:hint="17:00"
                             android:inputType="time"
                             android:paddingStart="12dp"
                             android:paddingEnd="12dp"
-                            android:textColor="#0F172A"
-                            android:textColorHint="#94A3B8" />
+                            android:textColor="#163A24"
+                            android:textColorHint="#7A8F7F" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -295,7 +296,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="6dp"
                             android:text="Location"
-                            android:textColor="#334155"
+                            android:textColor="#2F4F38"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -303,19 +304,20 @@
                             android:id="@+id/locationInput"
                             android:layout_width="match_parent"
                             android:layout_height="50dp"
-                            android:background="@drawable/input_bg"
+                            android:background="@drawable/green_input_bg"
                             android:hint="Enter location"
                             android:paddingStart="12dp"
                             android:paddingEnd="12dp"
-                            android:textColor="#0F172A"
-                            android:textColorHint="#94A3B8" />
+                            android:textColor="#163A24"
+                            android:textColorHint="#7A8F7F" />
                     </LinearLayout>
 
                     <Button
                         android:id="@+id/submitBtn"
                         android:layout_width="170dp"
                         android:layout_height="50dp"
-                        android:background="@drawable/btn_green_bg"
+                        android:background="@drawable/btn_forest_green_bg"
+                        android:backgroundTint="@null"
                         android:text="Submit Request"
                         android:textAllCaps="false"
                         android:textColor="#FFFFFF"
@@ -329,7 +331,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Estimated Gross Pay: PHP 0.00"
-                android:textColor="#2D5A27"
+                android:textColor="#1B5E20"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -338,14 +340,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Overtime is detected automatically when paid work hours exceed 8 hours after the 1-hour break deduction."
-                android:textColor="#64748B"
+                android:textColor="#56705D"
                 android:textSize="13sp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/card_bg"
+            android:background="@drawable/dashboard_green_card_bg"
             android:orientation="vertical"
             android:padding="18dp">
 
@@ -354,7 +356,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
                 android:text="My Requests"
-                android:textColor="#0F172A"
+                android:textColor="#173F1C"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -364,7 +366,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:text="No requests yet"
-                android:textColor="#64748B"
+                android:textColor="#56705D"
                 android:textSize="14sp" />
 
             <HorizontalScrollView
@@ -380,14 +382,15 @@
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingBottom="10dp"
-                        android:orientation="horizontal">
+                        android:background="@drawable/table_header_bg"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
 
                         <TextView
                             android:layout_width="110dp"
                             android:layout_height="wrap_content"
                             android:text="DATE"
-                            android:textColor="#64748B"
+                            android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -395,7 +398,7 @@
                             android:layout_width="120dp"
                             android:layout_height="wrap_content"
                             android:text="TYPE"
-                            android:textColor="#64748B"
+                            android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -403,7 +406,7 @@
                             android:layout_width="170dp"
                             android:layout_height="wrap_content"
                             android:text="TIME"
-                            android:textColor="#64748B"
+                            android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -411,7 +414,7 @@
                             android:layout_width="90dp"
                             android:layout_height="wrap_content"
                             android:text="PAID HRS"
-                            android:textColor="#64748B"
+                            android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -419,7 +422,7 @@
                             android:layout_width="70dp"
                             android:layout_height="wrap_content"
                             android:text="OT"
-                            android:textColor="#64748B"
+                            android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -427,7 +430,7 @@
                             android:layout_width="120dp"
                             android:layout_height="wrap_content"
                             android:text="GROSS PAY"
-                            android:textColor="#64748B"
+                            android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -435,7 +438,7 @@
                             android:layout_width="120dp"
                             android:layout_height="wrap_content"
                             android:text="STATUS"
-                            android:textColor="#64748B"
+                            android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -443,7 +446,7 @@
                             android:layout_width="180dp"
                             android:layout_height="wrap_content"
                             android:text="LOCATION"
-                            android:textColor="#64748B"
+                            android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -451,7 +454,7 @@
                             android:layout_width="170dp"
                             android:layout_height="wrap_content"
                             android:text="ADMIN REMARKS"
-                            android:textColor="#64748B"
+                            android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -460,6 +463,7 @@
                         android:id="@+id/recordContainer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:orientation="vertical" />
                 </LinearLayout>
             </HorizontalScrollView>
