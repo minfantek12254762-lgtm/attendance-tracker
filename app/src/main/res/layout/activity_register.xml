@@ -14,7 +14,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="28dp"
-        android:background="#181818">
+        android:background="@drawable/auth_card_bg"
+        android:elevation="8dp">
 
         <TextView
             android:layout_width="match_parent"
