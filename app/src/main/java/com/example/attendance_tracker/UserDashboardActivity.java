@@ -2,7 +2,6 @@ package com.example.attendance_tracker;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,7 +12,6 @@ import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.view.Gravity;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -45,6 +43,8 @@ public class UserDashboardActivity extends AppCompatActivity {
     double approvedPay = 0;
     int pendingCount = 0;
 
+    String username = "user";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,21 +70,23 @@ public class UserDashboardActivity extends AppCompatActivity {
 
         recordContainer = findViewById(R.id.recordContainer);
 
-        String username = getIntent().getStringExtra("username");
-        if (username == null || username.trim().isEmpty()) {
-            username = "user";
+        String passedUsername = getIntent().getStringExtra("username");
+
+        if (passedUsername != null && !passedUsername.trim().isEmpty()) {
+            username = passedUsername;
         }
 
         setGreeting(username);
         setCurrentDate();
         setupSpinner();
+        setupButtonText();
         startClock();
         updateStats();
         updateEstimate();
 
         requestType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, android.view.View view, int position, long id) {
                 String type = requestType.getSelectedItem().toString();
 
                 if (type.equals("Regular Work")) {
@@ -109,7 +111,13 @@ public class UserDashboardActivity extends AppCompatActivity {
         timeOutInput.addTextChangedListener(simpleWatcher);
 
         submitBtn.setOnClickListener(v -> submitRequest());
+
         logoutBtn.setOnClickListener(v -> finish());
+    }
+
+    private void setupButtonText() {
+        submitBtn.setTransformationMethod(null);
+        logoutBtn.setTransformationMethod(null);
     }
 
     private final TextWatcher simpleWatcher = new TextWatcher() {
@@ -133,8 +141,19 @@ public class UserDashboardActivity extends AppCompatActivity {
 
         int start = "Hello, ".length();
 
-        span.setSpan(new StyleSpan(Typeface.BOLD), 0, fullText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        span.setSpan(new ForegroundColorSpan(Color.parseColor("#7A8B2E")), start, fullText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        span.setSpan(
+                new StyleSpan(Typeface.BOLD),
+                0,
+                fullText.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        span.setSpan(
+                new ForegroundColorSpan(Color.parseColor("#6B8E23")),
+                start,
+                fullText.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
 
         helloText.setText(span);
     }
@@ -145,12 +164,13 @@ public class UserDashboardActivity extends AppCompatActivity {
                 android.R.layout.simple_spinner_item,
                 new String[]{"Regular Work", "Vacation Leave", "Sick Leave"}
         );
+
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         requestType.setAdapter(adapter);
     }
 
     private void setCurrentDate() {
-        String today = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         dateInput.setText(today);
     }
 
@@ -166,7 +186,9 @@ public class UserDashboardActivity extends AppCompatActivity {
     }
 
     private void updateEstimate() {
-        String type = requestType.getSelectedItem() != null ? requestType.getSelectedItem().toString() : "Regular Work";
+        String type = requestType.getSelectedItem() != null
+                ? requestType.getSelectedItem().toString()
+                : "Regular Work";
 
         if (!type.equals("Regular Work")) {
             estPay.setText("Estimated Gross Pay: PHP 0.00");
@@ -223,6 +245,19 @@ public class UserDashboardActivity extends AppCompatActivity {
         pendingCount++;
         updateStats();
 
+        AdminDashboardActivity.addUserSubmittedRecord(
+                username,
+                date,
+                type,
+                timeDisplay,
+                paidHours,
+                overtime,
+                grossPay,
+                "Pending",
+                location,
+                remarks
+        );
+
         addRecord(
                 date,
                 type,
@@ -253,6 +288,7 @@ public class UserDashboardActivity extends AppCompatActivity {
             }
 
             SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
             Date in = format.parse(timeIn);
             Date out = format.parse(timeOut);
 
@@ -290,15 +326,24 @@ public class UserDashboardActivity extends AppCompatActivity {
             String location,
             String remarks
     ) {
-        emptyText.setVisibility(View.GONE);
+        emptyText.setVisibility(android.view.View.GONE);
 
         LinearLayout wrapper = new LinearLayout(this);
         wrapper.setOrientation(LinearLayout.VERTICAL);
 
+        LinearLayout.LayoutParams wrapperParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+
+        wrapperParams.setMargins(0, 0, 0, dp(10));
+        wrapper.setLayoutParams(wrapperParams);
+
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp(10), 0, dp(10));
+        row.setPadding(dp(10), dp(12), dp(10), dp(12));
+        row.setBackgroundResource(R.drawable.table_row_bg);
 
         row.addView(createCell(date, 110));
         row.addView(createCell(type, 120));
@@ -310,35 +355,36 @@ public class UserDashboardActivity extends AppCompatActivity {
         row.addView(createCell(location, 180));
         row.addView(createCell(remarks, 170));
 
-        View divider = new View(this);
-        LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(1)
-        );
-        divider.setLayoutParams(dividerParams);
-        divider.setBackgroundColor(Color.parseColor("#E2E8F0"));
-
         wrapper.addView(row);
-        wrapper.addView(divider);
-
         recordContainer.addView(wrapper);
     }
 
     private TextView createCell(String text, int widthDp) {
         TextView textView = new TextView(this);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(dp(widthDp), ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                dp(widthDp),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+
         textView.setLayoutParams(params);
         textView.setText(text);
         textView.setTextSize(14);
-        textView.setTextColor(Color.parseColor("#0F172A"));
+        textView.setTextColor(Color.parseColor("#173F1C"));
         textView.setSingleLine(false);
         textView.setPadding(0, 0, dp(8), 0);
+
         return textView;
     }
 
     private LinearLayout createStatusCell(String status, int widthDp) {
         LinearLayout container = new LinearLayout(this);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(dp(widthDp), ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                dp(widthDp),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+
         container.setLayoutParams(params);
         container.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
 
@@ -349,17 +395,18 @@ public class UserDashboardActivity extends AppCompatActivity {
         badge.setPadding(dp(10), dp(5), dp(10), dp(5));
 
         if (status.equalsIgnoreCase("Approved")) {
-            badge.setTextColor(Color.parseColor("#15803D"));
+            badge.setTextColor(Color.parseColor("#0F5132"));
             badge.setBackgroundResource(R.drawable.status_approved_bg);
         } else if (status.equalsIgnoreCase("Rejected")) {
-            badge.setTextColor(Color.parseColor("#B91C1C"));
+            badge.setTextColor(Color.parseColor("#842029"));
             badge.setBackgroundResource(R.drawable.status_rejected_bg);
         } else {
-            badge.setTextColor(Color.parseColor("#B45309"));
+            badge.setTextColor(Color.parseColor("#7A5D00"));
             badge.setBackgroundResource(R.drawable.status_pending_bg);
         }
 
         container.addView(badge);
+
         return container;
     }
 
