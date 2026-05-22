@@ -3,12 +3,21 @@ package com.example.attendance_tracker;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,114 +27,84 @@ public class MainActivity extends AppCompatActivity {
     TextView tvForgotPassword, tvLoginTitle, tvCaptcha;
 
     String selectedRole = "user";
-    String adminUsername = "admin";
-    String adminPassword = "admin123";
-    String defaultUserUsername = "user";
-    String defaultUserPassword = "user123";
     String currentCaptcha = "";
 
     int userFailedAttempts = 0;
     int adminFailedAttempts = 0;
     final int MAX_ATTEMPTS = 5;
 
+    DatabaseReference databaseReference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+       
+        FirebaseApp.initializeApp(this);
+        databaseReference = FirebaseDatabase.getInstance("https://attendance-tracking-1f963-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("users");
+
+        createDefaultAdmin(); 
+
         username = findViewById(R.id.username);
         password = findViewById(R.id.password);
         inputCaptcha = findViewById(R.id.inputCaptcha);
+        tvCaptcha = findViewById(R.id.tvCaptcha);
+        btnRefreshCaptcha = findViewById(R.id.btnRefreshCaptcha);
         btnUser = findViewById(R.id.btnUser);
         btnAdmin = findViewById(R.id.btnAdmin);
         btnSignIn = findViewById(R.id.btnSignIn);
         btnGoRegister = findViewById(R.id.btnGoRegister);
-        btnRefreshCaptcha = findViewById(R.id.btnRefreshCaptcha);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
         tvLoginTitle = findViewById(R.id.tvLoginTitle);
-        tvCaptcha = findViewById(R.id.tvCaptcha);
 
         generateCaptcha();
 
-        btnRefreshCaptcha.setOnClickListener(v -> generateCaptcha());
+        btnSignIn.setOnClickListener(v -> handleSignIn());
 
         btnUser.setOnClickListener(v -> {
             selectedRole = "user";
-            tvLoginTitle.setText("IAAM Login");
-            btnGoRegister.setVisibility(View.VISIBLE);
-            tvForgotPassword.setVisibility(View.VISIBLE);
             btnUser.setBackgroundColor(Color.parseColor("#1DB954"));
             btnUser.setTextColor(Color.parseColor("#000000"));
             btnAdmin.setBackgroundColor(Color.parseColor("#333333"));
             btnAdmin.setTextColor(Color.parseColor("#FFFFFF"));
-
-            username.setError(null);
-            password.setError(null);
-            inputCaptcha.setError(null);
-
             updateSignInButtonState();
         });
 
         btnAdmin.setOnClickListener(v -> {
             selectedRole = "admin";
-            tvLoginTitle.setText("IAAM Admin Login");
-            btnGoRegister.setVisibility(View.GONE);
-            tvForgotPassword.setVisibility(View.GONE);
             btnAdmin.setBackgroundColor(Color.parseColor("#1DB954"));
             btnAdmin.setTextColor(Color.parseColor("#000000"));
             btnUser.setBackgroundColor(Color.parseColor("#333333"));
             btnUser.setTextColor(Color.parseColor("#FFFFFF"));
-
-            username.setError(null);
-            password.setError(null);
-            inputCaptcha.setError(null);
-
             updateSignInButtonState();
         });
 
-        tvForgotPassword.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ResetPasswordActivity.class);
-            startActivity(intent);
-        });
+        btnRefreshCaptcha.setOnClickListener(v -> generateCaptcha());
 
         btnGoRegister.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
             startActivity(intent);
         });
 
-        btnSignIn.setOnClickListener(v -> loginUser());
+        tvForgotPassword.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ResetPasswordActivity.class);
+            startActivity(intent);
+        });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        username.setText("");
-        password.setText("");
-        inputCaptcha.setText("");
-
-        username.setError(null);
-        password.setError(null);
-        inputCaptcha.setError(null);
-
-        generateCaptcha();
-        updateSignInButtonState();
-    }
-
-    private void updateSignInButtonState() {
-        if (selectedRole.equals("admin") && adminFailedAttempts >= MAX_ATTEMPTS) {
-            btnSignIn.setEnabled(false);
-            btnSignIn.setBackgroundColor(Color.parseColor("#555555"));
-            btnSignIn.setTextColor(Color.parseColor("#AAAAAA"));
-        } else if (selectedRole.equals("user") && userFailedAttempts >= MAX_ATTEMPTS) {
-            btnSignIn.setEnabled(false);
-            btnSignIn.setBackgroundColor(Color.parseColor("#555555"));
-            btnSignIn.setTextColor(Color.parseColor("#AAAAAA"));
-        } else {
-            btnSignIn.setEnabled(true);
-            btnSignIn.setBackgroundColor(Color.parseColor("#1DB954"));
-            btnSignIn.setTextColor(Color.parseColor("#000000"));
-        }
+    private void createDefaultAdmin() {
+        databaseReference.child("admin").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    UserHelper admin = new UserHelper("System Administrator", "admin", "admin123", "admin");
+                    databaseReference.child("admin").setValue(admin);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
     }
 
     private void generateCaptcha() {
@@ -139,80 +118,80 @@ public class MainActivity extends AppCompatActivity {
         currentCaptcha = captchaBuilder.toString();
         tvCaptcha.setText(currentCaptcha);
         inputCaptcha.setText("");
-        inputCaptcha.setError(null);
     }
 
-    private void loginUser() {
-        if (selectedRole.equals("admin") && adminFailedAttempts >= MAX_ATTEMPTS) {
-            Toast.makeText(this, "Admin account locked.", Toast.LENGTH_LONG).show();
-            return;
-        } else if (selectedRole.equals("user") && userFailedAttempts >= MAX_ATTEMPTS) {
-            Toast.makeText(this, "User account locked.", Toast.LENGTH_LONG).show();
-            return;
+    private void updateSignInButtonState() {
+        if ((selectedRole.equals("admin") && adminFailedAttempts >= MAX_ATTEMPTS) ||
+                (selectedRole.equals("user") && userFailedAttempts >= MAX_ATTEMPTS)) {
+            btnSignIn.setEnabled(false);
+            btnSignIn.setText("LOCKED");
+            btnSignIn.setBackgroundColor(Color.parseColor("#555555"));
+            btnSignIn.setTextColor(Color.parseColor("#CCCCCC"));
+        } else {
+            btnSignIn.setEnabled(true);
+            btnSignIn.setText("SIGN IN");
+            btnSignIn.setBackgroundColor(Color.parseColor("#1DB954"));
+            btnSignIn.setTextColor(Color.parseColor("#000000"));
         }
+    }
 
-        String userInput = username.getText().toString().trim();
-        String passInput = password.getText().toString().trim();
-        String captchaInput = inputCaptcha.getText().toString().trim();
+    private void handleSignIn() {
+        String user = username.getText().toString().trim();
+        String pass = password.getText().toString().trim();
+        String captchaVal = inputCaptcha.getText().toString().trim();
 
-        boolean hasError = false;
-
-        if (userInput.isEmpty()) {
-            username.setError("Username is required");
-            hasError = true;
-        }
-
-        if (passInput.isEmpty()) {
-            password.setError("Password is required");
-            hasError = true;
-        }
-
-        if (captchaInput.isEmpty()) {
-            inputCaptcha.setError("CAPTCHA is required");
-            hasError = true;
-        }
-
-        if (hasError) {
+        if (user.isEmpty() || pass.isEmpty() || captchaVal.isEmpty()) {
+            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (!captchaInput.equals(currentCaptcha)) {
-            inputCaptcha.setError("Invalid CAPTCHA");
+        if (!captchaVal.equals(currentCaptcha)) {
+            Toast.makeText(this, "Invalid CAPTCHA", Toast.LENGTH_SHORT).show();
             generateCaptcha();
             return;
         }
 
-        if (selectedRole.equals("admin")) {
-            if (userInput.equals(adminUsername) && passInput.equals(adminPassword)) {
-                adminFailedAttempts = 0;
-                Toast.makeText(this, "Welcome Admin", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
-                startActivity(intent);
-            } else {
-                handleFailedAttempt("admin");
-                generateCaptcha();
-            }
-        } else {
-            boolean defaultUser = userInput.equals(defaultUserUsername) && passInput.equals(defaultUserPassword);
-            boolean registeredUser = userInput.equals(RegisterActivity.registeredUsername) && passInput.equals(RegisterActivity.registeredPassword);
+        
+        databaseReference.child(user).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String dbPass = snapshot.child("password").getValue(String.class);
+                    String dbRole = snapshot.child("role").getValue(String.class);
 
-            if (defaultUser || registeredUser) {
-                userFailedAttempts = 0;
-                Intent intent = new Intent(MainActivity.this, UserDashboardActivity.class);
-                if (registeredUser && !RegisterActivity.registeredFullName.isEmpty()) {
-                    intent.putExtra("username", RegisterActivity.registeredFullName);
+                    if (dbPass != null && dbPass.equals(pass)) {
+                        if (selectedRole.equals("admin") && "admin".equals(dbRole)) {
+                            adminFailedAttempts = 0;
+                            Toast.makeText(MainActivity.this, "Admin Login Successful", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else if (selectedRole.equals("user") && "user".equals(dbRole)) {
+                            userFailedAttempts = 0;
+                            Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(MainActivity.this, UserDashboardActivity.class);
+                            intent.putExtra("username", user);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            handleFailedAttempt(selectedRole, "Role mismatch.");
+                        }
+                    } else {
+                        handleFailedAttempt(selectedRole, "Invalid password.");
+                    }
                 } else {
-                    intent.putExtra("username", userInput);
+                    handleFailedAttempt(selectedRole, "User not found.");
                 }
-                startActivity(intent);
-            } else {
-                handleFailedAttempt("user");
-                generateCaptcha();
             }
-        }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(MainActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private void handleFailedAttempt(String role) {
+    private void handleFailedAttempt(String role, String errorMsg) {
         if (role.equals("admin")) {
             adminFailedAttempts++;
             if (adminFailedAttempts >= MAX_ATTEMPTS) {
@@ -220,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Admin account locked.", Toast.LENGTH_LONG).show();
             } else {
                 int attemptsLeft = MAX_ATTEMPTS - adminFailedAttempts;
-                Toast.makeText(this, "Invalid admin credentials. Attempts left: " + attemptsLeft, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, errorMsg + " Attempts left: " + attemptsLeft, Toast.LENGTH_SHORT).show();
             }
         } else {
             userFailedAttempts++;
@@ -229,8 +208,9 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "User account locked.", Toast.LENGTH_LONG).show();
             } else {
                 int attemptsLeft = MAX_ATTEMPTS - userFailedAttempts;
-                Toast.makeText(this, "Invalid user credentials. Attempts left: " + attemptsLeft, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, errorMsg + " Attempts left: " + attemptsLeft, Toast.LENGTH_SHORT).show();
             }
         }
+        generateCaptcha();
     }
 }
