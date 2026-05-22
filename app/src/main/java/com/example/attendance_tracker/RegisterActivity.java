@@ -7,25 +7,29 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import java.util.Random;
 
 public class RegisterActivity extends AppCompatActivity {
 
+    public static String registeredUsername = "";
+    public static String registeredPassword = "";
+    public static String registeredFullName = "";
+
     EditText fullName, username, password, confirmPassword, inputCaptchaReg;
     Button btnRegister, btnGoLogin, btnRefreshCaptchaReg;
     TextView tvCaptchaReg;
-
-    public static String registeredFullName = "";
-    public static String registeredUsername = "";
-    public static String registeredPassword = "";
     String currentCaptcha = "";
+    DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        fullName = findViewById(R.id.fullName);
+
+        databaseReference = FirebaseDatabase.getInstance("https://attendance-tracking-1f963-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("users");        fullName = findViewById(R.id.fullName);
         username = findViewById(R.id.username);
         password = findViewById(R.id.password);
         confirmPassword = findViewById(R.id.confirmPassword);
@@ -78,12 +82,19 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        registeredFullName = nameInput;
         registeredUsername = userInput;
         registeredPassword = passInput;
+        registeredFullName = nameInput;
 
-        Toast.makeText(this, "Account registered successfully", Toast.LENGTH_SHORT).show();
-        goToLogin();
+        UserHelper newUser = new UserHelper(nameInput, userInput, passInput, "user");
+        databaseReference.child(userInput).setValue(newUser).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(RegisterActivity.this, "Registered successfully in Firebase", Toast.LENGTH_SHORT).show();
+                goToLogin();
+            } else {
+                Toast.makeText(RegisterActivity.this, "Failed to register", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void goToLogin() {
