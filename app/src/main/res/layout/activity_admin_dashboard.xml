@@ -41,7 +41,6 @@
                 android:textColor="#FFFFFF"
                 android:textSize="13sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
         <LinearLayout
@@ -86,7 +85,6 @@
                         android:textColor="#163A24"
                         android:textColorHint="#7A8F7F"
                         android:textSize="13sp" />
-
                 </LinearLayout>
 
                 <LinearLayout
@@ -112,9 +110,7 @@
                         android:background="@drawable/green_input_bg"
                         android:paddingStart="8dp"
                         android:paddingEnd="8dp" />
-
                 </LinearLayout>
-
             </LinearLayout>
 
             <GridLayout
@@ -131,9 +127,6 @@
                     android:layout_columnWeight="1"
                     android:layout_margin="5dp"
                     android:background="@drawable/btn_forest_green_bg"
-                    android:minWidth="0dp"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
                     android:text="Search"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
@@ -147,9 +140,6 @@
                     android:layout_columnWeight="1"
                     android:layout_margin="5dp"
                     android:backgroundTint="#64748B"
-                    android:minWidth="0dp"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
                     android:text="Clear"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
@@ -165,17 +155,12 @@
                     android:layout_gravity="fill_horizontal"
                     android:layout_margin="5dp"
                     android:background="@drawable/btn_forest_green_bg"
-                    android:minWidth="0dp"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
                     android:text="Create Record"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
                     android:textSize="13sp"
                     android:textStyle="bold" />
-
             </GridLayout>
-
         </LinearLayout>
 
         <LinearLayout
@@ -212,134 +197,22 @@
                         android:orientation="horizontal"
                         android:padding="10dp">
 
-                        <TextView
-                            android:layout_width="50dp"
-                            android:layout_height="wrap_content"
-                            android:text="ID"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="110dp"
-                            android:layout_height="wrap_content"
-                            android:text="NAME"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="110dp"
-                            android:layout_height="wrap_content"
-                            android:text="DATE"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="130dp"
-                            android:layout_height="wrap_content"
-                            android:text="TYPE"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="150dp"
-                            android:layout_height="wrap_content"
-                            android:text="TIME"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="70dp"
-                            android:layout_height="wrap_content"
-                            android:text="PAID"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="70dp"
-                            android:layout_height="wrap_content"
-                            android:text="REG"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="60dp"
-                            android:layout_height="wrap_content"
-                            android:text="OT"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="90dp"
-                            android:layout_height="wrap_content"
-                            android:text="RATE"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="90dp"
-                            android:layout_height="wrap_content"
-                            android:text="BONUS"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="90dp"
-                            android:layout_height="wrap_content"
-                            android:text="DEDUCT"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="110dp"
-                            android:layout_height="wrap_content"
-                            android:text="GROSS"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="100dp"
-                            android:layout_height="wrap_content"
-                            android:text="STATUS"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="170dp"
-                            android:layout_height="wrap_content"
-                            android:text="LOCATION"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="140dp"
-                            android:layout_height="wrap_content"
-                            android:text="REMARKS"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="230dp"
-                            android:layout_height="wrap_content"
-                            android:text="ACTIONS"
-                            android:textColor="#FFFFFF"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
+                        <TextView android:layout_width="40dp" android:layout_height="wrap_content" android:text="ID" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="120dp" android:layout_height="wrap_content" android:text="NAME" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="100dp" android:layout_height="wrap_content" android:text="DATE" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="100dp" android:layout_height="wrap_content" android:text="TYPE" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="100dp" android:layout_height="wrap_content" android:text="TIME" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:text="PAID" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:text="REG" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:text="OT" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="80dp" android:layout_height="wrap_content" android:text="RATE" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="80dp" android:layout_height="wrap_content" android:text="BONUS" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="80dp" android:layout_height="wrap_content" android:text="DED" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="100dp" android:layout_height="wrap_content" android:text="GROSS" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="100dp" android:layout_height="wrap_content" android:text="STATUS" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="120dp" android:layout_height="wrap_content" android:text="LOC" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="120dp" android:layout_height="wrap_content" android:text="REMARKS" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                        <TextView android:layout_width="300dp" android:layout_height="wrap_content" android:text="ACTIONS" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:gravity="center" android:paddingEnd="20dp" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -348,13 +221,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:orientation="vertical" />
-
                 </LinearLayout>
-
             </HorizontalScrollView>
-
         </LinearLayout>
-
     </LinearLayout>
-
 </ScrollView>
