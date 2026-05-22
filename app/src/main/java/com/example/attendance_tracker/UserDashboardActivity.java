@@ -1,17 +1,16 @@
 package com.example.attendance_tracker;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.StyleSpan;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,10 +21,20 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class UserDashboardActivity extends AppCompatActivity {
@@ -37,18 +46,18 @@ public class UserDashboardActivity extends AppCompatActivity {
     LinearLayout recordContainer;
 
     Handler handler = new Handler(Looper.getMainLooper());
+    String username = "user";
+    DatabaseReference attendanceRef;
 
     double hourlyRate = 250.00;
-    double approvedHours = 0;
-    double approvedPay = 0;
-    int pendingCount = 0;
-
-    String username = "user";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_dashboard);
+
+        attendanceRef = FirebaseDatabase.getInstance("https://attendance-tracking-1f963-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                .getReference("attendance_records");
 
         helloText = findViewById(R.id.helloText);
         clockText = findViewById(R.id.clockText);
@@ -57,372 +66,466 @@ public class UserDashboardActivity extends AppCompatActivity {
         statPending = findViewById(R.id.statPending);
         estPay = findViewById(R.id.estPay);
         emptyText = findViewById(R.id.emptyText);
-
         dateInput = findViewById(R.id.dateInput);
         timeInInput = findViewById(R.id.timeInInput);
         timeOutInput = findViewById(R.id.timeOutInput);
         locationInput = findViewById(R.id.locationInput);
-
         requestType = findViewById(R.id.requestType);
-
         submitBtn = findViewById(R.id.submitBtn);
         logoutBtn = findViewById(R.id.logoutBtn);
-
         recordContainer = findViewById(R.id.recordContainer);
 
         String passedUsername = getIntent().getStringExtra("username");
+        if (passedUsername != null) username = passedUsername;
 
-        if (passedUsername != null && !passedUsername.trim().isEmpty()) {
-            username = passedUsername;
-        }
+        helloText.setText("Hello, " + username);
+        dateInput.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
+        requestType.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Regular Work", "Vacation Leave", "Sick Leave"}));
 
-        setGreeting(username);
-        setCurrentDate();
-        setupSpinner();
-        setupButtonText();
         startClock();
-        updateStats();
-        updateEstimate();
+        loadUserRecords();
+
+        TextWatcher timeWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                calculateEstimatedPay();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        };
+
+        timeInInput.addTextChangedListener(timeWatcher);
+        timeOutInput.addTextChangedListener(timeWatcher);
 
         requestType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, android.view.View view, int position, long id) {
-                String type = requestType.getSelectedItem().toString();
-
-                if (type.equals("Regular Work")) {
-                    timeInInput.setEnabled(true);
-                    timeOutInput.setEnabled(true);
-                } else {
-                    timeInInput.setEnabled(false);
-                    timeOutInput.setEnabled(false);
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedType = requestType.getSelectedItem().toString();
+                if (selectedType.contains("Leave")) {
                     timeInInput.setText("");
                     timeOutInput.setText("");
-                }
+                    locationInput.setText("");
 
-                updateEstimate();
+                    timeInInput.setEnabled(false);
+                    timeOutInput.setEnabled(false);
+                    locationInput.setEnabled(false);
+
+                    timeInInput.setHint("Not Required");
+                    timeOutInput.setHint("Not Required");
+                    locationInput.setHint("Not Required");
+                } else {
+                    timeInInput.setEnabled(true);
+                    timeOutInput.setEnabled(true);
+                    locationInput.setEnabled(true);
+
+                    timeInInput.setHint("08:00");
+                    timeOutInput.setHint("17:00");
+                    locationInput.setHint("Enter location");
+                }
+                calculateEstimatedPay();
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
-
-        timeInInput.addTextChangedListener(simpleWatcher);
-        timeOutInput.addTextChangedListener(simpleWatcher);
 
         submitBtn.setOnClickListener(v -> submitRequest());
 
-        logoutBtn.setOnClickListener(v -> finish());
-    }
-
-    private void setupButtonText() {
-        submitBtn.setTransformationMethod(null);
-        logoutBtn.setTransformationMethod(null);
-    }
-
-    private final TextWatcher simpleWatcher = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-        }
-
-        @Override
-        public void afterTextChanged(Editable s) {
-            updateEstimate();
-        }
-    };
-
-    private void setGreeting(String username) {
-        String fullText = "Hello, " + username;
-        SpannableString span = new SpannableString(fullText);
-
-        int start = "Hello, ".length();
-
-        span.setSpan(
-                new StyleSpan(Typeface.BOLD),
-                0,
-                fullText.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        );
-
-        span.setSpan(
-                new ForegroundColorSpan(Color.parseColor("#6B8E23")),
-                start,
-                fullText.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        );
-
-        helloText.setText(span);
-    }
-
-    private void setupSpinner() {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                new String[]{"Regular Work", "Vacation Leave", "Sick Leave"}
-        );
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        requestType.setAdapter(adapter);
-    }
-
-    private void setCurrentDate() {
-        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        dateInput.setText(today);
+        logoutBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(UserDashboardActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void startClock() {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                String time = new SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(new Date());
-                clockText.setText(time);
+                clockText.setText(new SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(new Date()));
                 handler.postDelayed(this, 1000);
             }
         });
     }
 
-    private void updateEstimate() {
-        String type = requestType.getSelectedItem() != null
-                ? requestType.getSelectedItem().toString()
-                : "Regular Work";
-
-        if (!type.equals("Regular Work")) {
-            estPay.setText("Estimated Gross Pay: PHP 0.00");
+    private void calculateEstimatedPay() {
+        String selectedType = requestType.getSelectedItem().toString();
+        if (selectedType.contains("Leave")) {
+            double estimatedPay = 8.0 * hourlyRate;
+            estPay.setText(String.format(Locale.getDefault(), "Estimated Gross Pay: PHP %.2f", estimatedPay));
             return;
         }
 
-        double paidHours = calculatePaidHours();
-        double grossPay = paidHours * hourlyRate;
+        String timeIn = timeInInput.getText().toString().trim();
+        String timeOut = timeOutInput.getText().toString().trim();
 
-        estPay.setText("Estimated Gross Pay: PHP " + String.format(Locale.getDefault(), "%.2f", grossPay));
+        if (timeIn.isEmpty() || timeOut.isEmpty()) {
+            estPay.setText("PHP 0.00");
+            return;
+        }
+
+        try {
+            String[] inParts = timeIn.split(":");
+            String[] outParts = timeOut.split(":");
+
+            if (inParts.length < 2 || outParts.length < 2) {
+                estPay.setText("PHP 0.00");
+                return;
+            }
+
+            double inHour = Double.parseDouble(inParts[0]);
+            double inMin = Double.parseDouble(inParts[1].replaceAll("[^0-9]", ""));
+            double outHour = Double.parseDouble(outParts[0]);
+            double outMin = Double.parseDouble(outParts[1].replaceAll("[^0-9]", ""));
+
+            if (timeIn.toLowerCase().contains("pm") && inHour < 12) inHour += 12;
+            if (timeIn.toLowerCase().contains("am") && inHour == 12) inHour = 0;
+            if (timeOut.toLowerCase().contains("pm") && outHour < 12) outHour += 12;
+            if (timeOut.toLowerCase().contains("am") && outHour == 12) outHour = 0;
+
+            double inTime = inHour + (inMin / 60.0);
+            double outTime = outHour + (outMin / 60.0);
+            double totalHours = 0;
+
+            if (outTime >= inTime) {
+                totalHours = outTime - inTime;
+            } else {
+                totalHours = (24.0 - inTime) + outTime;
+            }
+
+            double regularHours = 0;
+            double otHours = 0;
+
+            if (totalHours > 8.0) {
+                regularHours = 8.0;
+                otHours = totalHours - 8.0;
+            } else {
+                regularHours = totalHours;
+                otHours = 0.0;
+            }
+
+            double estimatedPay = (regularHours * hourlyRate) + (otHours * hourlyRate * 1.25);
+            estPay.setText(String.format(Locale.getDefault(), "Estimated Gross Pay: PHP %.2f", estimatedPay));
+
+        } catch (Exception e) {
+            estPay.setText("Estimated Gross Pay: PHP 0.00");
+        }
     }
 
     private void submitRequest() {
         String date = dateInput.getText().toString().trim();
-        String type = requestType.getSelectedItem().toString();
         String timeIn = timeInInput.getText().toString().trim();
         String timeOut = timeOutInput.getText().toString().trim();
         String location = locationInput.getText().toString().trim();
+        String type = requestType.getSelectedItem().toString();
 
-        if (date.isEmpty()) {
-            Toast.makeText(this, "Please enter date", Toast.LENGTH_SHORT).show();
+        boolean isLeave = type.contains("Leave");
+
+        if (date.isEmpty() || (!isLeave && (location.isEmpty() || timeIn.isEmpty() || timeOut.isEmpty()))) {
+            showBeautifulError("Please completely fill out all required fields.");
             return;
         }
 
-        if (location.isEmpty()) {
-            Toast.makeText(this, "Please enter location", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        final double finalRegularHours;
+        final double finalOtHours;
+        final String combinedTime;
+        final String finalLocation;
 
-        double paidHours = 0;
-        double overtime = 0;
-        double grossPay = 0;
-        String timeDisplay = "-";
-        String remarks = "-";
+        if (isLeave) {
+            finalRegularHours = 8.0;
+            finalOtHours = 0.0;
+            combinedTime = "08:00 - 17:00";
+            finalLocation = "Not Required";
+        } else {
+            try {
+                String[] inParts = timeIn.split(":");
+                String[] outParts = timeOut.split(":");
 
-        if (type.equals("Regular Work")) {
-            if (timeIn.isEmpty() || timeOut.isEmpty()) {
-                Toast.makeText(this, "Please enter Time In and Time Out", Toast.LENGTH_SHORT).show();
+                double inHour = Double.parseDouble(inParts[0]);
+                double inMin = Double.parseDouble(inParts[1].replaceAll("[^0-9]", ""));
+                double outHour = Double.parseDouble(outParts[0]);
+                double outMin = Double.parseDouble(outParts[1].replaceAll("[^0-9]", ""));
+
+                if (timeIn.toLowerCase().contains("pm") && inHour < 12) inHour += 12;
+                if (timeIn.toLowerCase().contains("am") && inHour == 12) inHour = 0;
+                if (timeOut.toLowerCase().contains("pm") && outHour < 12) outHour += 12;
+                if (timeOut.toLowerCase().contains("am") && outHour == 12) outHour = 0;
+
+                double inTime = inHour + (inMin / 60.0);
+                double outTime = outHour + (outMin / 60.0);
+                double totalHours = 0;
+
+                if (outTime >= inTime) {
+                    totalHours = outTime - inTime;
+                } else {
+                    totalHours = (24.0 - inTime) + outTime;
+                }
+
+                if (totalHours > 8.0) {
+                    finalRegularHours = 8.0;
+                    finalOtHours = totalHours - 8.0;
+                } else {
+                    finalRegularHours = totalHours;
+                    finalOtHours = 0.0;
+                }
+                combinedTime = timeIn + " - " + timeOut;
+                finalLocation = location;
+            } catch (Exception e) {
+                showBeautifulError("Invalid time format. Please use HH:mm (e.g., 08:00).");
                 return;
             }
-
-            paidHours = calculatePaidHours();
-
-            if (paidHours <= 0) {
-                Toast.makeText(this, "Invalid time input", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            overtime = Math.max(0, paidHours - 8);
-            grossPay = paidHours * hourlyRate;
-            timeDisplay = timeIn + " - " + timeOut;
         }
 
-        pendingCount++;
-        updateStats();
+        attendanceRef.orderByChild("name").equalTo(username).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                boolean isDuplicate = false;
 
-        AdminDashboardActivity.addUserSubmittedRecord(
-                username,
-                date,
-                type,
-                timeDisplay,
-                paidHours,
-                overtime,
-                grossPay,
-                "Pending",
-                location,
-                remarks
-        );
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    String existingDate = dataSnapshot.child("date").getValue(String.class);
+                    String existingTime = dataSnapshot.child("time").getValue(String.class);
 
-        addRecord(
-                date,
-                type,
-                timeDisplay,
-                paidHours,
-                overtime,
-                grossPay,
-                "Pending",
-                location,
-                remarks
-        );
+                    if (date.equals(existingDate) && combinedTime.equals(existingTime)) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
 
-        timeInInput.setText("");
-        timeOutInput.setText("");
-        locationInput.setText("");
-        updateEstimate();
+                if (isDuplicate) {
+                    showBeautifulError("Conflict Detected: An attendance record for " + date + " (" + combinedTime + ") already exists.");
+                } else {
+                    HashMap<String, Object> data = new HashMap<>();
+                    data.put("name", username);
+                    data.put("date", date);
+                    data.put("type", type);
+                    data.put("time", combinedTime);
+                    data.put("location", finalLocation);
+                    data.put("status", "Pending");
+                    data.put("remarks", "");
+                    data.put("paidHours", finalRegularHours);
+                    data.put("overtimeHours", finalOtHours);
+                    data.put("grossPay", (finalRegularHours * hourlyRate) + (finalOtHours * hourlyRate * 1.25));
 
-        Toast.makeText(this, "Request submitted", Toast.LENGTH_SHORT).show();
-    }
-
-    private double calculatePaidHours() {
-        try {
-            String timeIn = timeInInput.getText().toString().trim();
-            String timeOut = timeOutInput.getText().toString().trim();
-
-            if (timeIn.isEmpty() || timeOut.isEmpty()) {
-                return 0;
+                    attendanceRef.push().setValue(data).addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            showSuccessMessage("Attendance request submitted successfully!");
+                            timeInInput.setText("");
+                            timeOutInput.setText("");
+                            locationInput.setText("");
+                            estPay.setText("Estimated Gross Pay: PHP 0.00");
+                            calculateEstimatedPay();
+                        } else {
+                            showBeautifulError("Submission failed. Please check your internet connection.");
+                        }
+                    });
+                }
             }
 
-            SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.getDefault());
-
-            Date in = format.parse(timeIn);
-            Date out = format.parse(timeOut);
-
-            if (in == null || out == null) {
-                return 0;
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                showBeautifulError("Database error occurred while checking entries.");
             }
-
-            long difference = out.getTime() - in.getTime();
-
-            if (difference <= 0) {
-                return 0;
-            }
-
-            double hours = difference / 3600000.0;
-
-            if (hours > 5) {
-                hours -= 1;
-            }
-
-            return hours;
-
-        } catch (Exception e) {
-            return 0;
-        }
+        });
     }
 
-    private void addRecord(
-            String date,
-            String type,
-            String time,
-            double paidHours,
-            double overtime,
-            double grossPay,
-            String status,
-            String location,
-            String remarks
-    ) {
-        emptyText.setVisibility(android.view.View.GONE);
+    private void loadUserRecords() {
+        attendanceRef.orderByChild("name").equalTo(username).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                recordContainer.removeAllViews();
 
-        LinearLayout wrapper = new LinearLayout(this);
-        wrapper.setOrientation(LinearLayout.VERTICAL);
+                double totalApprovedHours = 0;
+                double totalApprovedPay = 0;
+                int totalPending = 0;
 
-        LinearLayout.LayoutParams wrapperParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
+                if (!snapshot.exists()) {
+                    emptyText.setVisibility(View.VISIBLE);
+                } else {
+                    emptyText.setVisibility(View.GONE);
 
-        wrapperParams.setMargins(0, 0, 0, dp(10));
-        wrapper.setLayoutParams(wrapperParams);
+                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                        String date = dataSnapshot.child("date").getValue(String.class);
+                        String type = dataSnapshot.child("type").getValue(String.class);
+                        String time = dataSnapshot.child("time").getValue(String.class);
+                        String status = dataSnapshot.child("status").getValue(String.class);
+                        String loc = dataSnapshot.child("location").getValue(String.class);
+                        String remarks = dataSnapshot.child("remarks").getValue(String.class);
 
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(10), dp(12), dp(10), dp(12));
-        row.setBackgroundResource(R.drawable.table_row_bg);
+                        Double pHours = dataSnapshot.child("paidHours").getValue(Double.class);
+                        Double otHours = dataSnapshot.child("overtimeHours").getValue(Double.class);
+                        Double gPay = dataSnapshot.child("grossPay").getValue(Double.class);
 
-        row.addView(createCell(date, 110));
-        row.addView(createCell(type, 120));
-        row.addView(createCell(time, 170));
-        row.addView(createCell(String.format(Locale.getDefault(), "%.2f", paidHours), 90));
-        row.addView(createCell(String.format(Locale.getDefault(), "%.2f", overtime), 70));
-        row.addView(createCell("PHP " + String.format(Locale.getDefault(), "%.2f", grossPay), 120));
-        row.addView(createStatusCell(status, 120));
-        row.addView(createCell(location, 180));
-        row.addView(createCell(remarks, 170));
+                        if (pHours == null) pHours = 0.0;
+                        if (otHours == null) otHours = 0.0;
+                        if (gPay == null) gPay = 0.0;
+                        if (remarks == null || remarks.isEmpty()) remarks = "-";
+                        if (loc == null || loc.isEmpty()) loc = "-";
 
-        wrapper.addView(row);
-        recordContainer.addView(wrapper);
+                        if ("Pending".equalsIgnoreCase(status)) {
+                            totalPending++;
+                        } else if ("Approved".equalsIgnoreCase(status)) {
+                            totalApprovedHours += pHours;
+                            totalApprovedPay += gPay;
+                        }
+
+                        CardView cardView = new CardView(UserDashboardActivity.this);
+                        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                        cardParams.setMargins(dp(12), dp(6), dp(12), dp(6));
+                        cardView.setLayoutParams(cardParams);
+                        cardView.setRadius(dp(10));
+                        cardView.setCardElevation(dp(3));
+                        cardView.setUseCompatPadding(true);
+
+                        LinearLayout row = new LinearLayout(UserDashboardActivity.this);
+                        row.setOrientation(LinearLayout.HORIZONTAL);
+                        row.setPadding(dp(12), dp(14), dp(12), dp(14));
+                        row.setGravity(Gravity.CENTER_VERTICAL);
+
+                        if ("Approved".equalsIgnoreCase(status)) {
+                            row.setBackgroundColor(Color.parseColor("#F4FAF7"));
+                        } else if ("Rejected".equalsIgnoreCase(status)) {
+                            row.setBackgroundColor(Color.parseColor("#FFF5F5"));
+                        } else {
+                            row.setBackgroundColor(Color.parseColor("#FFFDF6"));
+                        }
+
+                        TextView tvDate = new TextView(UserDashboardActivity.this);
+                        tvDate.setLayoutParams(new LinearLayout.LayoutParams(dp(110), ViewGroup.LayoutParams.WRAP_CONTENT));
+                        tvDate.setText(date);
+                        tvDate.setTextColor(Color.parseColor("#2D3748"));
+                        tvDate.setTypeface(null, Typeface.BOLD);
+                        row.addView(tvDate);
+
+                        TextView tvType = new TextView(UserDashboardActivity.this);
+                        tvType.setLayoutParams(new LinearLayout.LayoutParams(dp(120), ViewGroup.LayoutParams.WRAP_CONTENT));
+                        tvType.setText(type);
+                        tvType.setTextColor(Color.parseColor("#4A5568"));
+                        row.addView(tvType);
+
+                        TextView tvTime = new TextView(UserDashboardActivity.this);
+                        tvTime.setLayoutParams(new LinearLayout.LayoutParams(dp(170), ViewGroup.LayoutParams.WRAP_CONTENT));
+                        tvTime.setText(time);
+                        tvTime.setTextColor(Color.parseColor("#4A5568"));
+                        row.addView(tvTime);
+
+                        TextView tvPaidHours = new TextView(UserDashboardActivity.this);
+                        tvPaidHours.setLayoutParams(new LinearLayout.LayoutParams(dp(90), ViewGroup.LayoutParams.WRAP_CONTENT));
+                        tvPaidHours.setText(String.format(Locale.getDefault(), "%.2fh", pHours));
+                        tvPaidHours.setTextColor(Color.parseColor("#4A5568"));
+                        row.addView(tvPaidHours);
+
+                        TextView tvOT = new TextView(UserDashboardActivity.this);
+                        tvOT.setLayoutParams(new LinearLayout.LayoutParams(dp(70), ViewGroup.LayoutParams.WRAP_CONTENT));
+                        tvOT.setText(String.format(Locale.getDefault(), "%.2fh", otHours));
+                        tvOT.setTextColor(Color.parseColor("#E53E3E"));
+                        row.addView(tvOT);
+
+                        TextView tvGrossPay = new TextView(UserDashboardActivity.this);
+                        tvGrossPay.setLayoutParams(new LinearLayout.LayoutParams(dp(140), ViewGroup.LayoutParams.WRAP_CONTENT));
+                        tvGrossPay.setText(String.format(Locale.getDefault(), "PHP %.2f", gPay));
+                        tvGrossPay.setTextColor(Color.parseColor("#2B6CB0"));
+                        tvGrossPay.setTypeface(null, Typeface.BOLD);
+                        tvGrossPay.setMaxLines(1);
+                        tvGrossPay.setHorizontallyScrolling(true);
+                        row.addView(tvGrossPay);
+
+                        LinearLayout statusContainer = createStatusBadge(status);
+                        statusContainer.setLayoutParams(new LinearLayout.LayoutParams(dp(120), ViewGroup.LayoutParams.WRAP_CONTENT));
+                        row.addView(statusContainer);
+
+                        TextView tvLoc = new TextView(UserDashboardActivity.this);
+                        tvLoc.setLayoutParams(new LinearLayout.LayoutParams(dp(180), ViewGroup.LayoutParams.WRAP_CONTENT));
+                        tvLoc.setText(loc);
+                        tvLoc.setTextColor(Color.parseColor("#718096"));
+                        row.addView(tvLoc);
+
+                        TextView tvRemarks = new TextView(UserDashboardActivity.this);
+                        tvLoc.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                        tvRemarks.setLayoutParams(new LinearLayout.LayoutParams(dp(170), ViewGroup.LayoutParams.WRAP_CONTENT));
+                        tvRemarks.setText(remarks);
+                        tvRemarks.setTextColor(Color.parseColor("#718096"));
+                        row.addView(tvRemarks);
+
+                        cardView.addView(row);
+                        recordContainer.addView(cardView);
+                    }
+                }
+
+                statHours.setText(String.format(Locale.getDefault(), "%.2fh", totalApprovedHours));
+                statPay.setText("PHP " + String.format(Locale.getDefault(), "%.2f", totalApprovedPay));
+                statPending.setText(String.valueOf(totalPending));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                showBeautifulError("Failed to fetch historical attendance records.");
+            }
+        });
     }
 
-    private TextView createCell(String text, int widthDp) {
-        TextView textView = new TextView(this);
-
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                dp(widthDp),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-
-        textView.setLayoutParams(params);
-        textView.setText(text);
-        textView.setTextSize(14);
-        textView.setTextColor(Color.parseColor("#173F1C"));
-        textView.setSingleLine(false);
-        textView.setPadding(0, 0, dp(8), 0);
-
-        return textView;
-    }
-
-    private LinearLayout createStatusCell(String status, int widthDp) {
+    private LinearLayout createStatusBadge(String status) {
         LinearLayout container = new LinearLayout(this);
-
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                dp(widthDp),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         container.setLayoutParams(params);
         container.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
 
         TextView badge = new TextView(this);
-        badge.setText(status);
-        badge.setTextSize(13);
-        badge.setTypeface(null, Typeface.BOLD);
-        badge.setPadding(dp(10), dp(5), dp(10), dp(5));
+        if (status == null) status = "Pending";
+        badge.setText(status.toUpperCase());
+        badge.setTextSize(11);
+        badge.setTypeface(Typeface.create("sans-serif-medium", Typeface.BOLD));
+        badge.setPadding(dp(12), dp(6), dp(12), dp(6));
+
+        GradientDrawable shape = new GradientDrawable();
+        shape.setShape(GradientDrawable.RECTANGLE);
+        shape.setCornerRadius(dp(20));
 
         if (status.equalsIgnoreCase("Approved")) {
-            badge.setTextColor(Color.parseColor("#0F5132"));
-            badge.setBackgroundResource(R.drawable.status_approved_bg);
+            badge.setTextColor(Color.parseColor("#198754"));
+            shape.setColor(Color.parseColor("#D1E7DD"));
         } else if (status.equalsIgnoreCase("Rejected")) {
-            badge.setTextColor(Color.parseColor("#842029"));
-            badge.setBackgroundResource(R.drawable.status_rejected_bg);
+            badge.setTextColor(Color.parseColor("#DC3545"));
+            shape.setColor(Color.parseColor("#F8D7DA"));
         } else {
-            badge.setTextColor(Color.parseColor("#7A5D00"));
-            badge.setBackgroundResource(R.drawable.status_pending_bg);
+            badge.setTextColor(Color.parseColor("#977000"));
+            shape.setColor(Color.parseColor("#FFF3CD"));
         }
 
+        badge.setBackground(shape);
         container.addView(badge);
-
         return container;
     }
 
-    private void updateStats() {
-        statHours.setText(String.format(Locale.getDefault(), "%.2fh", approvedHours));
-        statPay.setText("PHP " + String.format(Locale.getDefault(), "%.2f", approvedPay));
-        statPending.setText(String.valueOf(pendingCount));
+    private void showBeautifulError(String message) {
+        View contextView = findViewById(android.R.id.content);
+        Snackbar snackbar = Snackbar.make(contextView, message, Snackbar.LENGTH_LONG);
+        snackbar.setBackgroundTint(Color.parseColor("#DC3545"));
+        snackbar.setTextColor(Color.WHITE);
+
+        TextView textView = snackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text);
+        if (textView != null) {
+            textView.setTextSize(14);
+            textView.setTypeface(null, Typeface.BOLD);
+            textView.setMaxLines(3);
+        }
+        snackbar.show();
+    }
+
+    private void showSuccessMessage(String message) {
+        View contextView = findViewById(android.R.id.content);
+        Snackbar snackbar = Snackbar.make(contextView, message, Snackbar.LENGTH_LONG);
+        snackbar.setBackgroundTint(Color.parseColor("#198754"));
+        snackbar.setTextColor(Color.WHITE);
+        snackbar.show();
     }
 
     private int dp(int value) {
         return Math.round(getResources().getDisplayMetrics().density * value);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        handler.removeCallbacksAndMessages(null);
     }
 }
